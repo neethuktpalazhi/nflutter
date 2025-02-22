@@ -1,4 +1,4 @@
-on:
+'on':
   pull_request:
     branches:
       - main
@@ -8,7 +8,7 @@ on:
       - main
       - master
       - develop
-name: "Build & Release"
+name: Build & Release
 jobs:
   build:
     name: Build & Release
@@ -17,15 +17,18 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
-          java-version: '12'
+          distribution: zulu
+          java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: stable
           architecture: x64
-
-      - run: flutter build apk --release --split-per-abi
-      - run: |
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Build Android APK
+        run: flutter build apk --release --split-per-abi
+      - name: Build iOS IPA
+        run: |
           flutter build ios --no-codesign
           cd build/ios/iphoneos
           mkdir Payload
@@ -36,14 +39,6 @@ jobs:
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
-          tag: v1.0.${{ github.run_number }}
-          token: ${{ secrets.TOKEN }}
-
-
-
-
-
-
-# push to master, main, develop
-# pull request on main master
+          artifacts: 'build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa'
+          tag: 'v1.0.${{ github.run_number }}'
+          token: '${{ secrets.TOKEN }}'
